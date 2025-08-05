@@ -1,79 +1,98 @@
-def list_all_videos(videos):
-    print("*" * 50)
-    for video in videos:
-        print(f"{video}\n")
-    print("*" * 50)
+import json
 
-def add_video(videos):
-    current_number_videos = len(videos)
-    title = input("enter the title of the video: ")
-    duration = input("enter the duration of the video: ")
-    createdBy = input("enter the creator of the video: ")
+def list_all_videos(FILE_NAME):
+    try:
+        videos = get_videos(FILE_NAME)  # videos is list
+        print("*" * 30)
+        for video in videos:
+            print(f"{video}")
+        print("*" * 30)
+    except TypeError:
+        print(f"error while displaying the videos...!")
     
-    current_video = {
-        "id": current_number_videos + 1,
-        "title": title,
-        "duration": duration,
-        "createdBy": createdBy
-    }
-    
-    videos.append(current_video)
-    print("video is added successfully...")
-    
-def update_video(videos):
-    if len(videos) <= 0:
-        print("no added videos yet...!")
-        return
+def add_video(FILE_NAME):
+    try:
+        videos = get_videos(FILE_NAME)  # either [] or [ {}, {}, .. ]
+        while True:
+            title = input("enter the title of the video: ")
+            duration = input("enter the duration of the video: ")
+            createdBy = input("enter the owner of the video: ")
 
-    while True:
-        video_id = int(input("enter the id of the video: "))
-        if video_id <= len(videos):
-            break
-        print(f"video with give id:{video_id} doesn't exists")
-    
-    print(f"Note: updates will be reflected in the corresponding old ones...")
-    new_title = input("enter a new title for the video (press enter, if you don't want): ")
-    new_duration = input("enter a new duration for the video (press enter, if you don't want): ")
-    new_createdBy = input("enter a new creator of the video (press enter, if you don't want): ")
-    
-    #[ {}, {}, {}, ... ]
-    if new_title.strip() != "":
-        print("title gets updated...!")
-        for video in videos:
-            if(video['id'] == video_id):
-                video['title'] = new_title
+            if title.strip() != "" and duration.strip() != "" and createdBy.strip() != "":
+                break
                 
-    if new_duration.strip() != "":
-        print("duration gets updated ...!")
-        for video in videos:
-            if(video['id'] == video_id):
-                video['duration'] = new_duration
-                
-    if new_createdBy.strip() != "":
-        print("createdBy gets updated...!")
-        for video in videos:
-            if(video['id'] == video_id):
-                video['createdBy'] = new_createdBy                
-    
-def delete_video(videos):
-    if len(videos) <= 0:
-        print("no added videos yet...!")
-        return
-    
+        videos.append({
+            "id": videos.__len__(),
+            "title": title,
+            "duration": duration,
+            "createdBy": createdBy
+        })
+        set_videos(FILE_NAME, videos)
+        print(f"new video added...!\n")
+    except:
+        print("error")
+
+# TODO:
+def update_video(FILE_NAME):
+    list_all_videos(FILE_NAME)
+    videos = get_videos(FILE_NAME)
+    update_video_request_count = 0
     while True:
-        video_id = int(input("enter the id of the video: "))
-        if video_id <= len(videos):
+        if update_video_request_count >= 3:
+            response = input("would you like to return to home (y/n): ")
+            if response.strip() == "y":
+                return
+            
+        video_id = int(input("enter the video-id you want to update:"))
+        if 0 <= video_id <= len(videos) - 1:
             break
-        print(f"video with give id:{video_id} doesn't exists")
-        
+        update_video_request_count += 1
+    
     for video in videos:
-        if videos.index(video) == video_id:
-            videos.remove(video)
-            print(f"video with id:{video_id} and contents: {video} gets deleted...!")
+        print(video)
+        if video["id"] == video_id:
+            new_title = input("enter the new title (leave blank if you don't want to: )")
+            new_duration = input("enter the new duration (leave blank if you don't want to: )")
+            new_createdBy = input("enter the new createdBy (leave blank if you don't want to: )")
+
+            if new_title.strip() != "":
+                video["title"] = new_title
+            if new_duration.strip() != "":
+                video["duration"] = new_duration
+            if new_createdBy.strip() != "":
+                video["createdBy"] = new_createdBy
+
+    set_videos(FILE_NAME, videos)
+    print(f"updated the details of video-id: {video_id}\n")
+    
+# TODO:
+def delete_video(FILE_NAME):
+    videos = get_videos(FILE_NAME)
+    while True:
+        video_id = int(input("enter the video-id you want to delete: "))
+        if 0 <= video_id <= len(videos):
             break
-        
+    videos.remove(videos[video_id])
+    set_videos(FILE_NAME, videos)
+    print(f"video with video-id:{video_id} removed...!\n")
+
+def set_videos(FILE_NAME, videos):
+    try:
+        with open(FILE_NAME, 'w') as file:
+            json.dump(videos, file, indent=4)
+    except:
+        print(f"error while saving the changes in the {FILE_NAME}")
+
+def get_videos(FILE_NAME):
+    try:
+        with open(FILE_NAME, 'r') as file:
+            videos = json.load(file)
+        return videos
+    except FileNotFoundError:
+        return []
+
 def main():
-    videos = []
+    FILE_NAME = "videos.json"
     while True:
         print("Youtube Manager application")
         print("1. list all your favorite yt-videos.")
@@ -86,13 +105,13 @@ def main():
         
         match choice:
             case "1":
-                list_all_videos(videos)
+                list_all_videos(FILE_NAME)
             case "2":
-                add_video(videos)
+                add_video(FILE_NAME)
             case "3":
-                update_video(videos)
+                update_video(FILE_NAME)
             case "4":
-                delete_video(videos)
+                delete_video(FILE_NAME)
             case "5":
                 break
             case _: # default case:
