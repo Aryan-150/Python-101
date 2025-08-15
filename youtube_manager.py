@@ -5,14 +5,14 @@ def list_all_videos(FILE_NAME):
         videos = get_videos(FILE_NAME)  # videos is list
         print("*" * 30)
         for video in videos:
-            print(f"{video}")
+            print(f"{video["id"]}. --> {video["title"]}, {video["duration"]}, {video["createdBy"]}")
         print("*" * 30)
     except TypeError:
         print(f"error while displaying the videos...!")
     
 def add_video(FILE_NAME):
     try:
-        videos = get_videos(FILE_NAME)  # either [] or [ {}, {}, .. ]
+        videos = get_videos(FILE_NAME)
         while True:
             title = input("enter the title of the video: ")
             duration = input("enter the duration of the video: ")
@@ -32,7 +32,6 @@ def add_video(FILE_NAME):
     except:
         print("error")
 
-# TODO:
 def update_video(FILE_NAME):
     list_all_videos(FILE_NAME)
     videos = get_videos(FILE_NAME)
@@ -64,8 +63,7 @@ def update_video(FILE_NAME):
 
     set_videos(FILE_NAME, videos)
     print(f"updated the details of video-id: {video_id}\n")
-    
-# TODO:
+
 def delete_video(FILE_NAME):
     videos = get_videos(FILE_NAME)
     while True:
